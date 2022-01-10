@@ -1,5 +1,7 @@
 package com.example.Service;
 
+import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -8,13 +10,18 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.Advice.CustomException;
 import com.example.Entity.Flight;
-import com.example.Model.Journey;
+import com.example.Entity.NotificationEntity;
 import com.example.Model.FlightModel;
+import com.example.Model.Journey;
+import com.example.Model.NotificationModel;
 import com.example.Repository.FlightsRepository;
-
+import com.example.Repository.NotificationEntityRepository;
+@Servicess
 public class FlightService {
 	
 	@Autowired
@@ -22,15 +29,18 @@ public class FlightService {
 	
 	@Autowired
 	RestTemplate restTemplate;
+	
+	@Autowired
+	NotificationEntityRepository NotificationEntityRepo;
 
 //	@Cacheable(key ="#id",value = "flightStore")
-	public Flight findById(Integer id) throws Exception {
+	public Flight findById(Integer id) throws CustomException {
 		System.out.println("inside service");
 		Optional<Flight> flights = flightRepo.findById(id);
 		if(flights.isPresent()) {
 			return flights.get();
 		}else {
-			throw new Exception("No Flight with the flight Id " + id);
+			throw new CustomException("No Flight with the flight Id " + id);
 		}
 	}
 	public FlightModel addFlight(FlightModel ipflight) throws Exception {
@@ -94,7 +104,7 @@ public class FlightService {
 			flightRepo.save(flights);
 
 			
-			String url="http://localhost:8085/FlightBooking/addJourney";
+			String url="http://localhost:8085/FlightBooking/updateJourney";
 			ParameterizedTypeReference<Journey> responseType= new ParameterizedTypeReference<Journey>() {
 			};
 			
@@ -121,6 +131,54 @@ public class FlightService {
 	public List<Flight> findByScheduleType(String scheduleType) {
 		List<Flight> flight1 = flightRepo.findFlights(scheduleType);
 		return flight1;
+	}
+	
+	public void saveNotification(NotificationModel model) {
+		NotificationEntity notification=new NotificationEntity();
+		
+		notification.setMessagebody(model.getMessage());
+		notification.setSubject(model.getSubject());
+		notification.setTimeOfEvent(model.getTimeOfEvent());
+		notification.setUserid(model.getUserId());
+		
+		NotificationEntityRepo.save(notification);
+	}
+	
+	
+	public List<FlightModel> findAll() {
+		List<Flight> flights=flightRepo.findAll();
+		List<FlightModel> modelList=new ArrayList<>();
+		for (Flight flight : flights) {
+			String url="http://localhost:8085/FlightBooking/getJourneyByFlightId/"+flight.getFlightId();
+			ParameterizedTypeReference<List<Journey>> responseType= new ParameterizedTypeReference<List<Journey>>() {
+			};
+			HttpEntity<?> httpEntity=new HttpEntity(null,null);
+			ResponseEntity<List<Journey>> res=restTemplate.exchange(url, HttpMethod.GET, httpEntity, responseType);
+			
+			List<Journey> journeyList=res.getBody();
+			for (Journey journey : journeyList) {
+				
+				FlightModel model =new FlightModel();
+				
+				model.setAirline(flight.getAirline());
+				model.setAmount(journey.getAmount());
+				model.setArrivalTime(journey.getArrivalTime());
+				model.setBusinessSeats(flight.getBusinessSeats());
+				model.setDepartureTime(journey.getDepartureTime());
+				model.setFlightId(flight.getFlightId());
+				model.setFlightName(flight.getFlightName());
+				model.setFromLocation(journey.getFromLocation());
+				model.setJourneyId(journey.getJourneyId());
+				model.setNonBusinessSeats(flight.getNonBusinessSeats());
+				model.setScheduleType(flight.getScheduleType());
+				model.setToLocation(journey.getToLocation());
+			
+				
+				modelList.add(model);
+			}
+		}
+		
+		return modelList;
 	}
 
 }
