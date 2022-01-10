@@ -21,7 +21,7 @@ import com.example.Model.Journey;
 import com.example.Model.NotificationModel;
 import com.example.Repository.FlightsRepository;
 import com.example.Repository.NotificationEntityRepository;
-@Servicess
+@Service
 public class FlightService {
 	
 	@Autowired
