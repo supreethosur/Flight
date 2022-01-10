@@ -36,9 +36,10 @@ public class FlightService {
 //	@Cacheable(key ="#id",value = "flightStore")
 	public Flight findById(Integer id) throws CustomException {
 		System.out.println("inside service");
-		Optional<Flight> flights = flightRepo.findById(id);
-		if(flights.isPresent()) {
-			return flights.get();
+		Flight flights = flightRepo.findByFlightId(id);
+		if(flights!=null) {
+			System.out.println(1234);
+			return flights;
 		}else {
 			throw new CustomException("No Flight with the flight Id " + id);
 		}
@@ -47,8 +48,8 @@ public class FlightService {
 		try {
 			Flight flight=addFlightDetails(ipflight);
 			ipflight.setFlightId(flight.getFlightId());
-			
-			String url="http://localhost:8085/FlightBooking/addJourney";
+			System.out.println(123146);
+			String url="http://localhost:8081/addJourney";
 			ParameterizedTypeReference<Journey> responseType= new ParameterizedTypeReference<Journey>() {
 			};
 			
@@ -75,6 +76,8 @@ public class FlightService {
 			flight.setBusinessSeats(ipflight.getBusinessSeats());
 			flight.setNonBusinessSeats(ipflight.getNonBusinessSeats());
 			flight.setScheduleType(ipflight.getScheduleType());
+			flight.setAirline(ipflight.getAirline());
+			flight.setIsActive(1);
 			return flightRepo.save(flight);
 		}
 		catch(Exception e) {
@@ -103,13 +106,13 @@ public class FlightService {
 			flights.setAirline(flight.getAirline());
 			flightRepo.save(flights);
 
-			
-			String url="http://localhost:8085/FlightBooking/updateJourney";
+			System.out.println("qwert");
+			String url="http://localhost:8081/updateJourney";
 			ParameterizedTypeReference<Journey> responseType= new ParameterizedTypeReference<Journey>() {
 			};
 			
 			HttpEntity<FlightModel> httpEntity=new HttpEntity<>(flight,null);
-			ResponseEntity<Journey> res1=restTemplate.exchange(url, HttpMethod.POST, httpEntity, responseType);
+			ResponseEntity<Journey> res1=restTemplate.exchange(url, HttpMethod.PUT, httpEntity, responseType);
 			
 			
 			Journey journey=res1.getBody();//journeyRepo.findByJourneyId(flight.getJourneyId());
@@ -149,7 +152,7 @@ public class FlightService {
 		List<Flight> flights=flightRepo.findAll();
 		List<FlightModel> modelList=new ArrayList<>();
 		for (Flight flight : flights) {
-			String url="http://localhost:8085/FlightBooking/getJourneyByFlightId/"+flight.getFlightId();
+			String url="http://localhost:8081/getJourneyByFlightId/"+flight.getFlightId();
 			ParameterizedTypeReference<List<Journey>> responseType= new ParameterizedTypeReference<List<Journey>>() {
 			};
 			HttpEntity<?> httpEntity=new HttpEntity(null,null);
@@ -162,9 +165,9 @@ public class FlightService {
 				
 				model.setAirline(flight.getAirline());
 				model.setAmount(journey.getAmount());
-				model.setArrivalTime(journey.getArrivalTime());
+				model.setArrivalTime(journey.getArrivalTime().toString());
 				model.setBusinessSeats(flight.getBusinessSeats());
-				model.setDepartureTime(journey.getDepartureTime());
+				model.setDepartureTime(journey.getDepartureTime().toString());
 				model.setFlightId(flight.getFlightId());
 				model.setFlightName(flight.getFlightName());
 				model.setFromLocation(journey.getFromLocation());
