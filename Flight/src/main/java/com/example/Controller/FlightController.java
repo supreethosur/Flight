@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.example.Model.NotificationModel;
 import com.example.Service.FlightService;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class FlightController {
 	
 @Autowired
@@ -29,7 +31,7 @@ FlightService flightService;
 		System.out.println("inside Controller");
 		Flight flights = flightService.findById(Id);	 
 		return flights;
-	}
+	} 
 	
 	@GetMapping("/scheduleType/{scheduleType}")
 	public  List<Flight>  getFlightsByScheduleType(@PathVariable String scheduleType) throws Exception {
@@ -40,20 +42,21 @@ FlightService flightService;
 	
 	@PostMapping("/addFlights")
 	public FlightModel addFlights(@RequestBody FlightModel ipflight) throws Exception {
-		
+		System.out.println(123);
 		return flightService.addFlight(ipflight);
 	}
 	
 	@GetMapping("/GetAllFlights")
-	public  List<FlightModel>  getFlightsById() throws Exception {
+	public  List<FlightModel>  getFlightsByName(String FlightName) throws Exception {
 		System.out.println("inside Controller");
-		List<FlightModel> flights = flightService.findAll();	 
+		List<FlightModel> flights = flightService.findAll(FlightName);	 
 		return flights;
 	}
 	
 	
 	@DeleteMapping("/deleteFlight/{Id}")
 	public void deleteFlight(@PathVariable Integer Id) throws Exception {
+		System.out.println(Id);
 		flightService.deleteById(Id);
 	}
 	
@@ -63,12 +66,12 @@ FlightService flightService;
 		return flight1;
 	}
 	
-	@KafkaListener(topics = "new_kafkaTopic", groupId="group_id", containerFactory = "userKafkaListenerFactory")
-	public void consumeJson(NotificationModel model) {
-	    System.out.println("Consumed JSON Message: " + model.getMessage());
-	    flightService.saveNotification(model);
-	   
-	}
+//	@KafkaListener(topics = "new_kafkaTopic", groupId="group_id", containerFactory = "userKafkaListenerFactory")
+//	public void consumeJson(NotificationModel model) {
+//	    System.out.println("Consumed JSON Message: " + model.getMessage());
+//	    flightService.saveNotification(model);
+//	   
+//	}
 	
 	
 	

@@ -24,4 +24,9 @@ public interface FlightsRepository extends JpaRepository<Flight, Integer>{
 
 	Flight findByFlightId(Integer flightId);
 
+	@Query(value=QueryConstants.GET_Active_FLIGHTS)
+	List<Flight> findAllByIsActive(Integer active);
+	
+	List<Flight> findByFlightNameStartsWithAndIsActive(String flightName,Integer active);
+
 }

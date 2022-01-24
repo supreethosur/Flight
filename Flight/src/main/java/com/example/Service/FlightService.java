@@ -48,7 +48,6 @@ public class FlightService {
 		try {
 			Flight flight=addFlightDetails(ipflight);
 			ipflight.setFlightId(flight.getFlightId());
-			System.out.println(123146);
 			String url="http://localhost:8081/addJourney";
 			ParameterizedTypeReference<Journey> responseType= new ParameterizedTypeReference<Journey>() {
 			};
@@ -148,8 +147,14 @@ public class FlightService {
 	}
 	
 	
-	public List<FlightModel> findAll() {
-		List<Flight> flights=flightRepo.findAll();
+	public List<FlightModel> findAll(String flightName) {
+		List<Flight> flights=new ArrayList<Flight>();
+		if(flightName!=null && !flightName.equals("")) {
+			flights=flightRepo.findByFlightNameStartsWithAndIsActive(flightName,1);
+		}
+		else {
+			flights=flightRepo.findAllByIsActive(1);
+		}
 		List<FlightModel> modelList=new ArrayList<>();
 		for (Flight flight : flights) {
 			String url="http://localhost:8081/getJourneyByFlightId/"+flight.getFlightId();
