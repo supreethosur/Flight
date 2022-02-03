@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -32,6 +33,9 @@ public class FlightService {
 	
 	@Autowired
 	NotificationEntityRepository NotificationEntityRepo;
+	
+	@Value("${FlightBookingUrl}")
+	private String flightBookingService;
 
 //	@Cacheable(key ="#id",value = "flightStore")
 	public Flight findById(Integer id) throws CustomException {
@@ -48,7 +52,7 @@ public class FlightService {
 		try {
 			Flight flight=addFlightDetails(ipflight);
 			ipflight.setFlightId(flight.getFlightId());
-			String url="http://localhost:8081/addJourney";
+			String url=flightBookingService+"/addJourney";
 			ParameterizedTypeReference<Journey> responseType= new ParameterizedTypeReference<Journey>() {
 			};
 			
@@ -106,7 +110,7 @@ public class FlightService {
 			flightRepo.save(flights);
 
 			System.out.println("qwert");
-			String url="http://localhost:8081/updateJourney";
+			String url=flightBookingService+"/updateJourney";
 			ParameterizedTypeReference<Journey> responseType= new ParameterizedTypeReference<Journey>() {
 			};
 			
@@ -157,7 +161,7 @@ public class FlightService {
 		}
 		List<FlightModel> modelList=new ArrayList<>();
 		for (Flight flight : flights) {
-			String url="http://localhost:8081/getJourneyByFlightId/"+flight.getFlightId();
+			String url=flightBookingService+"/getJourneyByFlightId/"+flight.getFlightId();
 			ParameterizedTypeReference<List<Journey>> responseType= new ParameterizedTypeReference<List<Journey>>() {
 			};
 			HttpEntity<?> httpEntity=new HttpEntity(null,null);
